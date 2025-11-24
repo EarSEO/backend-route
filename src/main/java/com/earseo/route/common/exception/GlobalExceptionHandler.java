@@ -1,6 +1,6 @@
 package com.earseo.route.common.exception;
 
-import com.example.demo.common.BaseResponse;
+import com.earseo.route.common.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
