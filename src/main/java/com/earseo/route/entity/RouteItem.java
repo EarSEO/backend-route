@@ -31,7 +31,10 @@ public class RouteItem {
     @Column(name = "name", nullable = false, length = 30)
     private String name;
 
-    @Column(name = "image_url", length = 255)
+    @Column(name = "docent_url", nullable = false)
+    private String docentUrl;
+
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Column(name = "theme", length = 50)
@@ -51,6 +54,4 @@ public class RouteItem {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-
 }
