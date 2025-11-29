@@ -26,7 +26,7 @@ public class RouteItem {
     private RouteRefType refType;
 
     @Column(name = "ref_id", nullable = false)
-    private Long refId;
+    private String refId;
 
     @Column(name = "name", nullable = false, length = 30)
     private String name;
