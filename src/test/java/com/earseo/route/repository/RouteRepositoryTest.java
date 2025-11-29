@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @DisplayName("Route 엔티티가 DB에 정상 저장되는지 확인한다")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 class RouteRepositoryTest {
 
     @Autowired
