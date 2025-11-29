@@ -46,6 +46,9 @@ spring:
       database: 4
       host: localhost
       port: 6379
+feign:
+  sight-service:
+    url: ${SIGHT_SERVICE_URL:http://localhost:8080}
 
 management:
   endpoints:
