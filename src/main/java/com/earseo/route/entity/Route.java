@@ -40,4 +40,31 @@ public class Route {
 
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RouteItem> items = new ArrayList<>();
+
+    public static Route createInProgress(Long memberId, String name) {
+        Route route = new Route();
+        route.memberId = memberId;
+        route.name = name;
+        route.status = RouteStatus.IN_PROGRESS;
+        route.startedAt = LocalDateTime.now();
+        route.createdAt = LocalDateTime.now();
+        route.updatedAt = LocalDateTime.now();
+        return route;
+    }
+
+    public void addItem(RouteItem item) {
+        this.items.add(item);
+        item.setRoute(this);
+    }
+
+    public void addItems(List<RouteItem> items) {
+        for (RouteItem item : items) {
+            addItem(item);
+        }
+    }
+
+    public void complete() {
+        this.status = RouteStatus.COMPLETED;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

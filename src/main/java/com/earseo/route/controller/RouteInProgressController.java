@@ -40,4 +40,20 @@ public class RouteInProgressController {
     public ResponseEntity<BaseResponse<InProgressRouteDetailResponse>> createInProgressRoute(@RequestHeader("X-USER-ID") Long userId, @RequestBody CreateRouteRequest request) {
         return ResponseEntity.ok(BaseResponse.ok(routeInProgressService.createInProgressRoute(userId, request)));
     }
+
+    @Operation(
+            summary = "[내 경로 진행 관리] 진행 중 경로 정상 종료",
+            description = "진행 중(IN_PROGRESS) 상태의 경로를 완료(COMPLETED) 상태로 변경합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "경로 종료 처리 성공"
+            )
+    })
+    @PostMapping("/{routeId}/complete")
+    public ResponseEntity<BaseResponse<Void>> completeRoute(@RequestHeader("X-USER-ID") Long userId, @PathVariable("routeId") Long routeId) {
+        routeInProgressService.completeRoute(userId, routeId);
+        return ResponseEntity.ok(BaseResponse.ok(null));
+    }
 }

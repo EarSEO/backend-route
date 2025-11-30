@@ -1,6 +1,5 @@
 package com.earseo.route.dto.response;
 
-import com.earseo.route.entity.Route;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;

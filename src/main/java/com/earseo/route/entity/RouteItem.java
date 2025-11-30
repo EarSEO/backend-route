@@ -54,4 +54,32 @@ public class RouteItem {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public static RouteItem of(
+            RouteRefType refType,
+            String refId,
+            String name,
+            String imageUrl,
+            String address,
+            Double latitude,
+            Double longitude,
+            String docentUrl,
+            String theme
+    ) {
+        RouteItem item = new RouteItem();
+        item.refType = refType;
+        item.refId = refId;
+        item.name = name;
+        item.imageUrl = imageUrl;
+        item.address = address;
+        item.latitude = latitude;
+        item.longitude = longitude;
+        item.docentUrl = docentUrl;
+        item.theme = theme;
+        return item;
+    }
+
+    void setRoute(Route route) {
+        this.route = route;
+    }
 }

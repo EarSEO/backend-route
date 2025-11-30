@@ -6,6 +6,11 @@ import com.earseo.route.dto.response.InProgressRouteDetailResponse;
 import com.earseo.route.dto.response.RouteItemResponse;
 import com.earseo.route.dto.response.RoutePathPointResponse;
 import com.earseo.route.dto.response.SightMetaResponse;
+import com.earseo.route.entity.Route;
+import com.earseo.route.entity.RouteItem;
+import com.earseo.route.entity.RouteStatus;
+import com.earseo.route.repository.RouteItemRepository;
+import com.earseo.route.repository.RouteRepository;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchResult;
 import com.earseo.route.service.route.RouteSearchService;
@@ -22,17 +27,10 @@ public class RouteInProgressService {
 
     private final SightFeignClient sightFeignClient;
     private final RouteSearchService routeSearchService;
+    private final RouteRepository routeRepository;
+    private final RouteItemRepository routeItemRepository;
 
     public InProgressRouteDetailResponse createInProgressRoute(Long memberId, CreateRouteRequest request) {
-
-        /** 내부 처리 흐름 확인용
-         * 1. 요청 검증
-         * 2. 관광지 메타 조회
-         * 3. 경로 찾기(호출만)
-         * 4. path 변환
-         * 5. items -> RouteItemResponse 변환
-         * 6. db 저장 없이 응답 조립만
-         **/
 
         if (request.placeIds() == null || request.placeIds().isEmpty()) {
             /** todo : 예외 처리 task 에서 수정
@@ -44,27 +42,83 @@ public class RouteInProgressService {
 
         RouteSearchResult searchResult = routeSearchService.findRoute(memberId, sights);
 
-        List<RoutePathPointResponse> pathResponses = searchResult.path().stream().map(RouteInProgressService::toPathResponse).toList();
+        String routeName = buildRouteName(searchResult);
+        Route route = Route.createInProgress(memberId, routeName);
 
-        List<RouteItemResponse> itemResponses = searchResult.items().stream().map(item -> new RouteItemResponse(
+        List<RouteItem> routeItems = searchResult.items().stream().map(item -> RouteItem.of(
                 item.type(),
                 item.refId(),
                 item.name(),
                 item.imageUrl(),
                 item.address(),
-                new RoutePathPointResponse(item.longitude(), item.latitude()),
+                item.latitude(),
+                item.longitude(),
                 item.docentUrl(),
                 item.theme()
         )).toList();
 
+        route.addItems(routeItems);
+        Route savedRoute = routeRepository.save(route);
+
+        List<RoutePathPointResponse> pathResponses = searchResult.path().stream().map(RouteInProgressService::toPathResponse).toList();
+
+        List<RouteItemResponse> itemResponses = routeItems.stream().map(item -> new RouteItemResponse(
+                item.getRefType(),
+                item.getRefId(),
+                item.getName(),
+                item.getImageUrl(),
+                item.getAddress(),
+                new RoutePathPointResponse(item.getLongitude(), item.getLatitude()),
+                item.getDocentUrl(),
+                item.getTheme()
+        )).toList();
+
         return new InProgressRouteDetailResponse(
-                null,
+                savedRoute.getId(),
                 pathResponses,
                 itemResponses
         );
     }
 
+    public void completeRoute(Long memberId, Long routeId) {
+        Route route = routeRepository.findById(routeId)
+                .orElseThrow(() ->
+                        /** todo : 예외 처리 task 에서 수정
+                         */
+                        new IllegalArgumentException("존재하지 않는 경로입니다.")
+                );
+
+        if (!route.getMemberId().equals(memberId)) {
+            /** todo : 예외 처리 task 에서 수정
+             */
+            throw new IllegalArgumentException("해당 사용자의 경로가 아닙니다.");
+        }
+
+        if (route.getStatus() != RouteStatus.IN_PROGRESS) {
+            /** todo : 예외 처리 task 에서 수정
+             */
+            throw new IllegalArgumentException("진행 중이 아닌 경로는 완료할 수 없습니다.");
+        }
+
+        route.complete();
+    }
+
     private static RoutePathPointResponse toPathResponse(RoutePathPoint p) {
         return new RoutePathPointResponse(p.longitude(), p.latitude());
+    }
+
+    private String buildRouteName(RouteSearchResult searchResult) {
+        if (searchResult.items().isEmpty()) {
+            return "나의 경로";
+        }
+
+        String start = searchResult.items().get(0).name();
+        String end = searchResult.items().get(searchResult.items().size() - 1).name();
+
+        if (start.equals(end)) {
+            return start;
+        }
+
+        return start + " - " + end;
     }
 }

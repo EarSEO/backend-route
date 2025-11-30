@@ -4,7 +4,11 @@ import com.earseo.route.controller.client.SightFeignClient;
 import com.earseo.route.dto.request.CreateRouteRequest;
 import com.earseo.route.dto.response.InProgressRouteDetailResponse;
 import com.earseo.route.dto.response.SightMetaResponse;
+import com.earseo.route.entity.Route;
 import com.earseo.route.entity.RouteRefType;
+import com.earseo.route.entity.RouteStatus;
+import com.earseo.route.repository.RouteItemRepository;
+import com.earseo.route.repository.RouteRepository;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchItem;
 import com.earseo.route.service.route.RouteSearchResult;
@@ -18,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.mockito.Mockito;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +34,12 @@ class RouteInProgressServiceTest {
 
     @Mock
     private RouteSearchService routeSearchService;
+
+    @Mock
+    private RouteRepository routeRepository;
+
+    @Mock
+    private RouteItemRepository routeItemRepository;
 
     @InjectMocks
     private RouteInProgressService routeInProgressService;
@@ -76,6 +88,8 @@ class RouteInProgressServiceTest {
         );
         Mockito.when(routeSearchService.findRoute(memberId, mockedSights)).thenReturn(mockedResult);
 
+        Mockito.when(routeRepository.save(Mockito.any(Route.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
         //when
         InProgressRouteDetailResponse response = routeInProgressService.createInProgressRoute(memberId, req);
 
@@ -95,5 +109,72 @@ class RouteInProgressServiceTest {
         // verify mock
         Mockito.verify(sightFeignClient, Mockito.times(1)).getSightByIds(placeIds);
         Mockito.verify(routeSearchService, Mockito.times(1)).findRoute(memberId, mockedSights);
+        Mockito.verify(routeRepository, Mockito.times(1)).save(Mockito.any(Route.class));
     }
+
+    @Test
+    @DisplayName("경로 정상 종료 - IN_PROGRESS → COMPLETED")
+    void completeRoute_성공() {
+        //given
+        long memberId = 1L;
+        long routeId = 100L;
+
+        Route route = Mockito.mock(Route.class);
+        Mockito.when(route.getMemberId()).thenReturn(memberId);
+        Mockito.when(route.getStatus()).thenReturn(RouteStatus.IN_PROGRESS);
+
+        Mockito.when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
+
+        //when
+        routeInProgressService.completeRoute(memberId, routeId);
+
+        //then
+        Mockito.verify(route, Mockito.times(1)).complete();
+    }
+
+    @Test
+    @DisplayName("경로 정상 종료 - 소유자가 아니면 예외")
+    void completeRoute_소유자아님_예외() {
+        //given
+        Long memberId = 1L;
+        Long routeId = 100L;
+
+        Route route = Mockito.mock(Route.class);
+        Mockito.when(route.getMemberId()).thenReturn(999L);
+
+        Mockito.when(routeRepository.findById(routeId))
+                .thenReturn(Optional.of(route));
+
+        //when & then
+        Assertions.assertThatThrownBy(() ->
+                        routeInProgressService.completeRoute(memberId, routeId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("해당 사용자의 경로가 아닙니다.");
+
+        Mockito.verify(route, Mockito.never()).complete();
+    }
+
+    @Test
+    @DisplayName("경로 정상 종료 - IN_PROGRESS가 아니면 예외")
+    void completeRoute_진행중아님_예외() {
+        // given
+        Long memberId = 1L;
+        Long routeId = 100L;
+
+        Route route = Mockito.mock(Route.class);
+        Mockito.when(route.getMemberId()).thenReturn(memberId);
+        Mockito.when(route.getStatus()).thenReturn(RouteStatus.COMPLETED);
+
+        Mockito.when(routeRepository.findById(routeId))
+                .thenReturn(Optional.of(route));
+
+        // when & then
+        Assertions.assertThatThrownBy(() ->
+                        routeInProgressService.completeRoute(memberId, routeId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("진행 중이 아닌 경로는 완료할 수 없습니다.");
+
+        Mockito.verify(route, Mockito.never()).complete();
+    }
+
 }
