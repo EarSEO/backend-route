@@ -1,5 +1,7 @@
 package com.earseo.route.service;
 
+import com.earseo.route.common.exception.BaseException;
+import com.earseo.route.common.exception.RouteError;
 import com.earseo.route.controller.client.SightFeignClient;
 import com.earseo.route.dto.request.CreateRouteRequest;
 import com.earseo.route.dto.response.InProgressRouteDetailResponse;
@@ -50,8 +52,15 @@ class RouteInProgressServiceTest {
         //given
         CreateRouteRequest req = new CreateRouteRequest(List.of());
 
-        //when & then
-        Assertions.assertThatThrownBy(()-> routeInProgressService.createInProgressRoute(1L, req)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("최소 1개 이상의 관광지 ID가 필요합니다.");
+        // when
+        BaseException ex = Assertions.catchThrowableOfType(
+                () -> routeInProgressService.createInProgressRoute(1L, req),
+                BaseException.class
+        );
+
+        // then
+        Assertions.assertThat(ex.getErrorCode().getStatus()).isEqualTo(RouteError.INVALID_PLACE_IDS.getStatus());
+        Assertions.assertThat(ex.getErrorCode().getMessage()).isEqualTo(RouteError.INVALID_PLACE_IDS.getMessage());
     }
 
     @Test
@@ -145,12 +154,14 @@ class RouteInProgressServiceTest {
         Mockito.when(routeRepository.findById(routeId))
                 .thenReturn(Optional.of(route));
 
-        //when & then
-        Assertions.assertThatThrownBy(() ->
-                        routeInProgressService.completeRoute(memberId, routeId))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("해당 사용자의 경로가 아닙니다.");
+        //when
+        BaseException ex = Assertions.catchThrowableOfType(
+                () -> routeInProgressService.completeRoute(memberId, routeId),
+                BaseException.class
+        );
 
+        //then
+        Assertions.assertThat(ex.getErrorCode().getStatus()).isEqualTo(RouteError.ROUTE_NOT_OWNER.getStatus());
         Mockito.verify(route, Mockito.never()).complete();
     }
 
@@ -168,12 +179,14 @@ class RouteInProgressServiceTest {
         Mockito.when(routeRepository.findById(routeId))
                 .thenReturn(Optional.of(route));
 
-        // when & then
-        Assertions.assertThatThrownBy(() ->
-                        routeInProgressService.completeRoute(memberId, routeId))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("진행 중이 아닌 경로는 완료할 수 없습니다.");
+        // when
+        BaseException ex = Assertions.catchThrowableOfType(
+                () -> routeInProgressService.completeRoute(memberId, routeId),
+                BaseException.class
+        );
 
+        // then
+        Assertions.assertThat(ex.getErrorCode().getStatus()).isEqualTo(RouteError.ROUTE_NOT_IN_PROGRESS.getStatus());
         Mockito.verify(route, Mockito.never()).complete();
     }
 

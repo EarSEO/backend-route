@@ -1,5 +1,7 @@
 package com.earseo.route.service;
 
+import com.earseo.route.common.exception.BaseException;
+import com.earseo.route.common.exception.RouteError;
 import com.earseo.route.controller.client.SightFeignClient;
 import com.earseo.route.dto.request.CreateRouteRequest;
 import com.earseo.route.dto.response.InProgressRouteDetailResponse;
@@ -33,10 +35,11 @@ public class RouteInProgressService {
     public InProgressRouteDetailResponse createInProgressRoute(Long memberId, CreateRouteRequest request) {
 
         if (request.placeIds() == null || request.placeIds().isEmpty()) {
-            /** todo : 예외 처리 task 에서 수정
-             */
-            throw new IllegalArgumentException("최소 1개 이상의 관광지 ID가 필요합니다.");
+            throw new BaseException(RouteError.INVALID_PLACE_IDS);
         }
+
+        routeRepository.findByMemberIdAndStatus(memberId, RouteStatus.IN_PROGRESS)
+                .ifPresent(routeRepository::delete);
 
         List<SightMetaResponse> sights = sightFeignClient.getSightByIds(request.placeIds());
 
@@ -83,21 +86,14 @@ public class RouteInProgressService {
     public void completeRoute(Long memberId, Long routeId) {
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() ->
-                        /** todo : 예외 처리 task 에서 수정
-                         */
-                        new IllegalArgumentException("존재하지 않는 경로입니다.")
-                );
+                        new BaseException(RouteError.ROUTE_NOT_FOUND));
 
         if (!route.getMemberId().equals(memberId)) {
-            /** todo : 예외 처리 task 에서 수정
-             */
-            throw new IllegalArgumentException("해당 사용자의 경로가 아닙니다.");
+            throw new BaseException(RouteError.ROUTE_NOT_OWNER);
         }
 
         if (route.getStatus() != RouteStatus.IN_PROGRESS) {
-            /** todo : 예외 처리 task 에서 수정
-             */
-            throw new IllegalArgumentException("진행 중이 아닌 경로는 완료할 수 없습니다.");
+            throw new BaseException(RouteError.ROUTE_NOT_IN_PROGRESS);
         }
 
         route.complete();

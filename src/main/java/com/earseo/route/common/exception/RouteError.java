@@ -4,17 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-/**
- * 예시용 에러 코드 Enum
- * 실제 서비스에서는 별도 Enum 작성 (ex. StoryError, UserError 등)
- */
 @Getter
 @AllArgsConstructor
-public enum SampleError implements ErrorCodeInterface {
-
-    SAMPLE_NOT_FOUND("SMP001", "해당 데이터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    SAMPLE_FORBIDDEN("SMP002", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
-    SAMPLE_INTERNAL_ERROR("SMP003", "내부 서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+public enum RouteError implements ErrorCodeInterface {
+    INVALID_PLACE_IDS("RUT001", "최소 1개 이상의 관광지 ID가 필요합니다.", HttpStatus.BAD_REQUEST),
+    ROUTE_NOT_FOUND("RUT002", "존재하지 않는 경로입니다.", HttpStatus.NOT_FOUND),
+    ROUTE_NOT_OWNER("RUT003", "해당 사용자의 경로가 아닙니다.", HttpStatus.FORBIDDEN),
+    ROUTE_NOT_IN_PROGRESS("RUT004", "진행 중이 아닌 경로는 완료할 수 없습니다.", HttpStatus.CONFLICT);
 
     private final String status;
     private final String message;
