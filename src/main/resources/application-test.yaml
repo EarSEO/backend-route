@@ -67,5 +67,5 @@ logging:
     org.hibernate.SQL: ${LOGGING_LEVEL_ORG_HIBERNATE_SQL:debug}
 
 graphhopper:
-  osm-cdn-url: url
+  osm-cdn-url: https://cdn.example.com/seoul.osm.pbf
 
