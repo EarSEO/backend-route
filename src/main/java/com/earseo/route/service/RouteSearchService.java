@@ -78,47 +78,44 @@ public class RouteSearchService {
 
         BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,1000L));
 
-        GetRouteListSpotResponse lists = routeListSpotResponse.data();
-
-        if(lists.spotList() != null && !lists.spotList().isEmpty()) {
-            List<List<GetRouteSpotResponse>> spotList = lists.spotList();
-            for(List<GetRouteSpotResponse> list : spotList){
-                for(GetRouteSpotResponse res : list){
-                    System.out.println(res.toString());
-                }
-            }
-        }else{
-            System.out.println("Story Feign is NULL!!");
-        }
-
-
         Coordinate[] coordArray = allCoords.toArray(new Coordinate[0]);
         LineString  lineString = geometryFactory.createLineString(coordArray);
-
 
         return new RouteSearchResult(routes, getItems(sights,routeListSpotResponse.data()));
     }
 
     private List<RouteSearchItem> getItems(List<SightMetaResponse> sights, GetRouteListSpotResponse routeListSpotResponse) {
         List<RouteSearchItem> items = new ArrayList<>();
+        List<Long> ids = new ArrayList<>();
 
-        List<List<GetRouteSpotResponse>> spotList = routeListSpotResponse.spotList();
-        List<GetRouteSpotResponse> getRouteSpotResponses = spotList.isEmpty() ? new ArrayList<>() : spotList.get(0);
+        List<GetRouteSpotResponse> stories = routeListSpotResponse.spotList().stream()
+                .filter(list -> list != null && !list.isEmpty())
+                .flatMap(List::stream)
+                .toList();
 
-        for(int i=0;i<sights.size();i++){
+        for (int i = 0; i < sights.size(); i++) {
+
             SightMetaResponse sight = sights.get(i);
-            RouteSearchItem sightItem = new RouteSearchItem(RouteRefType.SIGHT,sight.id(), sight.name(),
-                    sight.imageUrl(), sight.address(), sight.latitude(), sight.longitude(), sight.docentUrl(), sight.theme(),null);
-            items.add(sightItem);
 
-            if(i != sights.size() - 1 && i < getRouteSpotResponses.size()){
-                GetRouteSpotResponse story =  getRouteSpotResponses.get(i);
-                RouteSearchItem spotItem= new RouteSearchItem(RouteRefType.STORY_SPOT,String.valueOf(story.storySpotId()),story.title(),
-                        null,null,story.latitude(),story.longitude(), story.docentUrl(), story.storyConcept().toString(),story.summaryId());
-                items.add(spotItem);
+            items.add(new RouteSearchItem(RouteRefType.SIGHT, sight.id(), sight.name(),
+                    sight.imageUrl(), sight.address(), sight.latitude(), sight.longitude(),
+                    sight.docentUrl(), sight.theme(), null));
+
+            if (i == sights.size() - 1) continue;
+
+            if (i < stories.size()) {
+                GetRouteSpotResponse story = stories.get(i);
+
+                if(ids.contains(story.storySpotId())) continue;
+
+                items.add(new RouteSearchItem(RouteRefType.STORY_SPOT, String.valueOf(story.storySpotId()), story.title(),
+                        null, null, story.latitude(), story.longitude(), story.docentUrl(),
+                        story.storyConcept().toString(), story.summaryId()));
+                ids.add(story.storySpotId());
             }
         }
 
-        return  items;
+        return items;
     }
+
 }
