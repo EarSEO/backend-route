@@ -31,7 +31,7 @@ public class RouteItem {
     @Column(name = "name", nullable = false, length = 30)
     private String name;
 
-    @Column(name = "docent_url", nullable = false)
+    @Column(name = "docent_url")
     private String docentUrl;
 
     @Column(name = "image_url")
