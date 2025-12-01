@@ -90,9 +90,9 @@ class RouteInProgressServiceTest {
                 // items
                 List.of(
                         new RouteSearchItem(RouteRefType.SIGHT, "1", "경복궁", "img1", "서울 종로구",
-                                126.97, 37.57, "docent1", "HISTORY"),
+                                126.97, 37.57, "docent1", "HISTORY",null),
                         new RouteSearchItem(RouteRefType.STORY_SPOT, "4", "DDP", null, null,
-                                126.98, 37.56, "docent2", null)
+                                126.98, 37.56, "docent2", null,null)
                 )
         );
         Mockito.when(routeSearchService.findRoute(memberId, mockedSights)).thenReturn(mockedResult);
