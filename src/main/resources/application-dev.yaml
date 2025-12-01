@@ -52,6 +52,9 @@ spring:
         master: ${SPRING_DATA_REDIS_SENTINEL_MASTER:valkey-master}
         nodes: ${SPRING_DATA_REDIS_SENTINEL_NODES:localhost:26379}
       database: 6
+feign:
+  sight-service:
+    url: ${SIGHT_SERVICE_URL:http://localhost:8080}
 
 otel:
   propagators:
