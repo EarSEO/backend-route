@@ -88,7 +88,9 @@ public class RouteSearchService {
 
     private List<RouteSearchItem> getItems(List<SightMetaResponse> sights, GetRouteListSpotResponse routeListSpotResponse) {
         List<RouteSearchItem> items = new ArrayList<>();
-        List<GetRouteSpotResponse> getRouteSpotResponses = routeListSpotResponse.spotList().getFirst();
+
+        List<List<GetRouteSpotResponse>> spotList = routeListSpotResponse.spotList();
+        List<GetRouteSpotResponse> getRouteSpotResponses = spotList.isEmpty() ? new ArrayList<>() : spotList.get(0);
 
         for(int i=0;i<sights.size();i++){
             SightMetaResponse sight = sights.get(i);
@@ -96,7 +98,7 @@ public class RouteSearchService {
                     sight.imageUrl(), sight.address(), sight.latitude(), sight.longitude(), sight.docentUrl(), sight.theme(),null);
             items.add(sightItem);
 
-            if(i != sights.size()-1){
+            if(i != sights.size() - 1 && i < getRouteSpotResponses.size()){
                 GetRouteSpotResponse story =  getRouteSpotResponses.get(i);
                 RouteSearchItem spotItem= new RouteSearchItem(RouteRefType.STORY_SPOT,String.valueOf(story.storySpotId()),story.title(),
                         null,null,story.latitude(),story.longitude(), story.docentUrl(), story.storyConcept().toString(),story.summaryId());
