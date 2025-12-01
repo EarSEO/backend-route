@@ -1,5 +1,6 @@
 package com.earseo.route.service;
 
+import com.earseo.route.common.BaseResponse;
 import com.earseo.route.controller.client.StoryFeignClient;
 import com.earseo.route.dto.request.GetRouteListSpotRequest;
 import com.earseo.route.dto.request.PathLineStringRequest;
@@ -75,14 +76,14 @@ public class RouteSearchService {
             paths.add(new PathLineStringRequest(pointRequests,1L));
         }
 
-        GetRouteListSpotResponse routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,50L));
+        BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,50L));
 
 
         Coordinate[] coordArray = allCoords.toArray(new Coordinate[0]);
         LineString  lineString = geometryFactory.createLineString(coordArray);
 
 
-        return new RouteSearchResult(routes, getItems(sights,routeListSpotResponse));
+        return new RouteSearchResult(routes, getItems(sights,routeListSpotResponse.data()));
     }
 
     private List<RouteSearchItem> getItems(List<SightMetaResponse> sights, GetRouteListSpotResponse routeListSpotResponse) {

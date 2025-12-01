@@ -1,5 +1,6 @@
 package com.earseo.route.controller.client;
 
+import com.earseo.route.common.BaseResponse;
 import com.earseo.route.dto.request.GetRouteListSpotRequest;
 import com.earseo.route.dto.response.GetRouteListSpotResponse;
 import com.earseo.route.dto.response.SightMetaResponse;
@@ -17,8 +18,8 @@ import java.util.List;
         url = "${feign.story-service.url}"
 )
 public interface StoryFeignClient {
-    @PostMapping("internal/story/path/spots")
-    GetRouteListSpotResponse getPathsSpotList(
+    @PostMapping("/internal/story/path/spots")
+    BaseResponse<GetRouteListSpotResponse> getPathsSpotList(
             @RequestBody @Valid
             GetRouteListSpotRequest request
     );
