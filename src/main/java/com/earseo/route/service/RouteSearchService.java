@@ -76,7 +76,7 @@ public class RouteSearchService {
             paths.add(new PathLineStringRequest(pointRequests,1L));
         }
 
-        BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,50L));
+        BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,1000L));
 
 
         Coordinate[] coordArray = allCoords.toArray(new Coordinate[0]);
