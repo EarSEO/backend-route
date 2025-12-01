@@ -11,5 +11,6 @@ public record CreateRouteRequest(
                 description = "사용자가 선택한 관광지(sight)의 ID 리스트",
                 example = "[\"1\", \"3\", \"12\"]"
         )
-        List<String> placeIds
+        List<String> placeIds,
+        PointRequest point
 ) {}

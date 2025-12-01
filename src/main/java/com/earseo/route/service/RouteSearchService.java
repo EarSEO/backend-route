@@ -32,7 +32,7 @@ public class RouteSearchService {
     private final GraphHopperService graphHopperService;
     private final StoryFeignClient storyFeignClient;
 
-    public RouteSearchResult findRoute(Long memberId, List<SightMetaResponse> sights) {
+    public RouteSearchResult findRoute(Long memberId, List<SightMetaResponse> sights, PointRequest point) {
 
         GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -41,6 +41,39 @@ public class RouteSearchService {
         List<PathLineStringRequest> paths = new ArrayList<>();
 
         List<RoutePathPoint>  routes = new ArrayList<>();
+
+        if (!sights.isEmpty()) {
+
+            SightMetaResponse first = sights.get(0);
+
+            GHPoint startPt = new GHPoint(point.latitude(), point.longitude());
+            GHPoint endPt = new GHPoint(first.latitude(), first.longitude());
+
+            GHRequest req = new GHRequest(startPt, endPt)
+                    .setProfile("foot_custom")
+                    .setLocale("ko");
+
+            GHResponse res = graphHopperService.getHopper().route(req);
+
+            if (res.hasErrors()) {
+                throw new RuntimeException(res.getErrors().toString());
+            }
+
+            PointList pts = res.getBest().getPoints();
+            List<PointRequest> pointRequests = new ArrayList<>();
+
+            for (int p = 0; p < pts.size(); p++) {
+                double lat = pts.getLat(p);
+                double lon = pts.getLon(p);
+
+                pointRequests.add(new PointRequest(lat, lon));
+                routes.add(new RoutePathPoint(lat, lon));
+
+                allCoords.add(new Coordinate(lon, lat));
+            }
+
+            paths.add(new PathLineStringRequest(pointRequests, 1L));
+        }
 
         for(int i=0;i<sights.size()-1;i++){
             SightMetaResponse start = sights.get(i);
@@ -76,7 +109,7 @@ public class RouteSearchService {
             paths.add(new PathLineStringRequest(pointRequests,1L));
         }
 
-        BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,1000L));
+        BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,null));
 
         Coordinate[] coordArray = allCoords.toArray(new Coordinate[0]);
         LineString  lineString = geometryFactory.createLineString(coordArray);

@@ -43,7 +43,7 @@ public class RouteInProgressService {
 
         List<SightMetaResponse> sights = sightFeignClient.getSightByIds(request.placeIds());
 
-        RouteSearchResult searchResult = routeSearchService.findRoute(memberId, sights);
+        RouteSearchResult searchResult = routeSearchService.findRoute(memberId, sights, request.point());
 
         String routeName = buildRouteName(searchResult);
         Route route = Route.createInProgress(memberId, routeName);
