@@ -28,5 +28,8 @@ public record RouteItemResponse(
         String itemDocentUrl,
 
         @Schema(description = "주요 테마", example = "A01")
-        String itemMajorTheme
+        String itemMajorTheme,
+
+        @Schema(description = "이야기 요약 아이디", example = "1L")
+        Long summaryId
 ) {}

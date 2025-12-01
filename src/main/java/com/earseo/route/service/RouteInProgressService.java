@@ -67,15 +67,16 @@ public class RouteInProgressService {
                 .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
                 .toList();
 
-        List<RouteItemResponse> itemResponses = routeItems.stream().map(item -> new RouteItemResponse(
-                item.getRefType(),
-                item.getRefId(),
-                item.getName(),
-                item.getImageUrl(),
-                item.getAddress(),
-                new RoutePathPointResponse(item.getLongitude(), item.getLatitude()),
-                item.getDocentUrl(),
-                item.getTheme()
+        List<RouteItemResponse> itemResponses = searchResult.items().stream().map(item -> new RouteItemResponse(
+                item.type(),
+                item.refId(),
+                item.name(),
+                item.imageUrl(),
+                item.address(),
+                new RoutePathPointResponse(item.longitude(), item.latitude()),
+                item.docentUrl(),
+                item.theme(),
+                item.summaryId()
         )).toList();
 
         return new InProgressRouteDetailResponse(
