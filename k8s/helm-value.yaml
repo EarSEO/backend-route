@@ -1,5 +1,5 @@
 image:
-  tag: v0.1.6
+  tag: v0.1.7
 env:
   SIGHT_SERVICE_URL: http://backend-sight:8080
   STORY_SERVICE_URL: http://backend-story:8080
