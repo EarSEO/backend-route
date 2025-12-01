@@ -67,7 +67,7 @@ public class RouteSearchService {
                 double lon = pts.getLon(p);
 
                 pointRequests.add(new PointRequest(lat, lon));
-                routes.add(new RoutePathPoint(lat, lon));
+                routes.add(new RoutePathPoint(lon, lat));
 
                 allCoords.add(new Coordinate(lon, lat));
             }
