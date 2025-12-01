@@ -78,6 +78,19 @@ public class RouteSearchService {
 
         BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,1000L));
 
+        GetRouteListSpotResponse lists = routeListSpotResponse.data();
+
+        if(lists.spotList() != null && !lists.spotList().isEmpty()) {
+            List<List<GetRouteSpotResponse>> spotList = lists.spotList();
+            for(List<GetRouteSpotResponse> list : spotList){
+                for(GetRouteSpotResponse res : list){
+                    System.out.println(res.toString());
+                }
+            }
+        }else{
+            System.out.println("Story Feign is NULL!!");
+        }
+
 
         Coordinate[] coordArray = allCoords.toArray(new Coordinate[0]);
         LineString  lineString = geometryFactory.createLineString(coordArray);
