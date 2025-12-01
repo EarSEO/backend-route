@@ -15,7 +15,6 @@ import com.earseo.route.repository.RouteItemRepository;
 import com.earseo.route.repository.RouteRepository;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchResult;
-import com.earseo.route.service.route.RouteSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +27,7 @@ import java.util.List;
 public class RouteInProgressService {
 
     private final SightFeignClient sightFeignClient;
+//    private final RouteSearchService routeSearchService;
     private final RouteSearchService routeSearchService;
     private final RouteRepository routeRepository;
     private final RouteItemRepository routeItemRepository;

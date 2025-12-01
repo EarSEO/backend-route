@@ -11,6 +11,7 @@ public record RouteSearchItem(
         Double latitude,
         Double longitude,
         String docentUrl,
-        String theme
+        String theme,
+        Long summaryId
 ) {
 }

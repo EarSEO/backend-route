@@ -55,6 +55,8 @@ spring:
 feign:
   sight-service:
     url: ${SIGHT_SERVICE_URL:http://localhost:8080}
+  story-service:
+    url: ${STORY_SERVICE_URL:http://localhost:8080}
 
 otel:
   propagators:
@@ -85,3 +87,6 @@ management:
 logging:
   level:
     org.hibernate.SQL: ${LOGGING_LEVEL_ORG_HIBERNATE_SQL:debug}
+
+graphhopper:
+  osm-cdn-url: ${OSM_CDN_URL}
