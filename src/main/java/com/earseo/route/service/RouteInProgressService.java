@@ -63,7 +63,9 @@ public class RouteInProgressService {
         route.addItems(routeItems);
         Route savedRoute = routeRepository.save(route);
 
-        List<RoutePathPointResponse> pathResponses = searchResult.path().stream().map(RouteInProgressService::toPathResponse).toList();
+        List<RoutePathPointResponse> pathResponses = searchResult.path().stream()
+                .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
+                .toList();
 
         List<RouteItemResponse> itemResponses = routeItems.stream().map(item -> new RouteItemResponse(
                 item.getRefType(),
