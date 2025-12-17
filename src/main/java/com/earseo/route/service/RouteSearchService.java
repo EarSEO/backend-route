@@ -9,6 +9,7 @@ import com.earseo.route.dto.response.GetRouteListSpotResponse;
 import com.earseo.route.dto.response.GetRouteSpotResponse;
 import com.earseo.route.dto.response.SightMetaResponse;
 import com.earseo.route.entity.RouteRefType;
+import com.earseo.route.entity.StoryConcept;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchItem;
 import com.earseo.route.service.route.RouteSearchResult;
@@ -32,7 +33,7 @@ public class RouteSearchService {
     private final GraphHopperService graphHopperService;
     private final StoryFeignClient storyFeignClient;
 
-    public RouteSearchResult findRoute(Long memberId, List<SightMetaResponse> sights, PointRequest point) {
+    public RouteSearchResult findRoute(Long memberId, List<SightMetaResponse> sights, PointRequest currentPoint) {
 
         GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -46,7 +47,7 @@ public class RouteSearchService {
 
             SightMetaResponse first = sights.get(0);
 
-            GHPoint startPt = new GHPoint(point.latitude(), point.longitude());
+            GHPoint startPt = new GHPoint(currentPoint.latitude(), currentPoint.longitude());
             GHPoint endPt = new GHPoint(first.latitude(), first.longitude());
 
             GHRequest req = new GHRequest(startPt, endPt)
@@ -109,7 +110,7 @@ public class RouteSearchService {
             paths.add(new PathLineStringRequest(pointRequests,1L));
         }
 
-        BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths,null,null));
+        BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths, StoryConcept.TIP,null));
 
         Coordinate[] coordArray = allCoords.toArray(new Coordinate[0]);
         LineString  lineString = geometryFactory.createLineString(coordArray);
@@ -121,33 +122,48 @@ public class RouteSearchService {
         List<RouteSearchItem> items = new ArrayList<>();
         List<Long> ids = new ArrayList<>();
 
-        List<GetRouteSpotResponse> stories = routeListSpotResponse.spotList().stream()
-                .filter(list -> list != null && !list.isEmpty())
-                .flatMap(List::stream)
-                .toList();
+        List<List<GetRouteSpotResponse>> spotLists = routeListSpotResponse.spotList();
 
         for (int i = 0; i < sights.size(); i++) {
 
             SightMetaResponse sight = sights.get(i);
 
-            items.add(new RouteSearchItem(RouteRefType.SIGHT, sight.id(), sight.name(),
-                    sight.imageUrl(), sight.address(), sight.latitude(), sight.longitude(),
-                    sight.docentUrl(), sight.theme(), null));
+            items.add(new RouteSearchItem(
+                    RouteRefType.SIGHT,
+                    sight.id(),
+                    sight.name(),
+                    sight.imageUrl(),
+                    sight.address(),
+                    sight.latitude(),
+                    sight.longitude(),
+                    sight.docentUrl(),
+                    sight.theme(),
+                    null
+            ));
 
-            if (i == sights.size() - 1) continue;
+            if (i >= spotLists.size()) continue;
 
-            if (i < stories.size()) {
-                GetRouteSpotResponse story = stories.get(i);
+            List<GetRouteSpotResponse> stories = spotLists.get(i);
+            if (stories == null || stories.isEmpty()) continue;
 
-                if(ids.contains(story.storySpotId())) continue;
+            for (GetRouteSpotResponse story : stories) {
+                if (ids.contains(story.storySpotId())) continue;
 
-                items.add(new RouteSearchItem(RouteRefType.STORY_SPOT, String.valueOf(story.storySpotId()), story.title(),
-                        null, null, story.latitude(), story.longitude(), story.docentUrl(),
-                        story.storyConcept().toString(), story.summaryId()));
+                items.add(new RouteSearchItem(
+                        RouteRefType.STORY_SPOT,
+                        String.valueOf(story.storySpotId()),
+                        story.title(),
+                        null,
+                        null,
+                        story.latitude(),
+                        story.longitude(),
+                        story.docentUrl(),
+                        story.storyConcept().toString(),
+                        story.summaryId()
+                ));
                 ids.add(story.storySpotId());
             }
         }
-
         return items;
     }
 
