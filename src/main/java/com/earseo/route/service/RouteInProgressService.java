@@ -16,9 +16,12 @@ import com.earseo.route.repository.RouteRepository;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchResult;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -119,5 +122,23 @@ public class RouteInProgressService {
         }
 
         return start + " - " + end;
+    }
+
+    /***
+     * route 엔티티 객체의 geom 형식을 front에 전달가능한 형태로 변환하는 메소드
+     *
+     */
+    public List<RoutePathPoint> getPaths(LineString lineString){
+        Coordinate[] coords = lineString.getCoordinates();
+
+        List<RoutePathPoint> result = new ArrayList<>(coords.length);
+
+        for (Coordinate c : coords) {
+            result.add(new RoutePathPoint(
+                    c.getX(),
+                    c.getY()
+            ));
+        }
+        return result;
     }
 }
