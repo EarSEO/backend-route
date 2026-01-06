@@ -11,7 +11,6 @@ import com.earseo.route.dto.response.SightMetaResponse;
 import com.earseo.route.entity.Route;
 import com.earseo.route.entity.RouteItem;
 import com.earseo.route.entity.RouteStatus;
-import com.earseo.route.repository.RouteItemRepository;
 import com.earseo.route.repository.RouteRepository;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchResult;
@@ -30,10 +29,8 @@ import java.util.List;
 public class RouteInProgressService {
 
     private final SightFeignClient sightFeignClient;
-//    private final RouteSearchService routeSearchService;
     private final RouteSearchService routeSearchService;
     private final RouteRepository routeRepository;
-    private final RouteItemRepository routeItemRepository;
 
     public InProgressRouteDetailResponse createInProgressRoute(Long memberId, CreateRouteRequest request) {
 
@@ -60,7 +57,8 @@ public class RouteInProgressService {
                 item.latitude(),
                 item.longitude(),
                 item.docentUrl(),
-                item.theme()
+                item.theme(),
+                item.summaryId()
         )).toList();
 
         route.addItems(routeItems);
@@ -70,17 +68,9 @@ public class RouteInProgressService {
                 .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
                 .toList();
 
-        List<RouteItemResponse> itemResponses = searchResult.items().stream().map(item -> new RouteItemResponse(
-                item.type(),
-                item.refId(),
-                item.name(),
-                item.imageUrl(),
-                item.address(),
-                new RoutePathPointResponse(item.longitude(), item.latitude()),
-                item.docentUrl(),
-                item.theme(),
-                item.summaryId()
-        )).toList();
+        List<RouteItemResponse> itemResponses = routeItems.stream()
+                .map(this::toRouteItemResponse)
+                .toList();
 
         return new InProgressRouteDetailResponse(
                 savedRoute.getId(),
@@ -89,10 +79,33 @@ public class RouteInProgressService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public InProgressRouteDetailResponse getInProgressRoute(Long memberId) {
+
+        Route route = routeRepository.findWithItemsByMemberIdAndStatus(memberId, RouteStatus.IN_PROGRESS).orElse(null);
+
+        if (route == null) {
+            return null;
+        }
+
+        List<RoutePathPointResponse> pathResponses = route.getPath() == null ? List.of() : getPaths(route.getPath()).stream()
+                .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
+                .toList();
+
+        List<RouteItemResponse> itemResponses = route.getItems().stream()
+                .map(this::toRouteItemResponse)
+                .toList();
+
+        return new InProgressRouteDetailResponse(
+                route.getId(),
+                pathResponses,
+                itemResponses
+        );
+    }
+
     public void completeRoute(Long memberId, Long routeId) {
         Route route = routeRepository.findById(routeId)
-                .orElseThrow(() ->
-                        new BaseException(RouteError.ROUTE_NOT_FOUND));
+                .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
 
         if (!route.getMemberId().equals(memberId)) {
             throw new BaseException(RouteError.ROUTE_NOT_OWNER);
@@ -105,10 +118,21 @@ public class RouteInProgressService {
         route.complete();
     }
 
-    private static RoutePathPointResponse toPathResponse(RoutePathPoint p) {
-        return new RoutePathPointResponse(p.longitude(), p.latitude());
+    private RouteItemResponse toRouteItemResponse(RouteItem item) {
+        return new RouteItemResponse(
+                item.getRefType(),
+                item.getRefId(),
+                item.getName(),
+                item.getImageUrl(),
+                item.getAddress(),
+                new RoutePathPointResponse(item.getLongitude(), item.getLatitude()),
+                item.getDocentUrl(),
+                item.getTheme(),
+                item.getSummaryId(),
+                item.isVisited()
+        );
     }
-
+    
     private String buildRouteName(RouteSearchResult searchResult) {
         if (searchResult.items().isEmpty()) {
             return "나의 경로";
