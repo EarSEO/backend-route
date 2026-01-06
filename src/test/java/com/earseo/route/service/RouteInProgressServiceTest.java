@@ -279,6 +279,49 @@ class RouteInProgressServiceTest {
         Assertions.assertThat(res.routeItems().getFirst().visited()).isTrue();
     }
 
+
+    @Test
+    @DisplayName("updateRouteItemVisited: 성공 - IN_PROGRESS이면 markVisited 호출")
+    void updateRouteItemVisited_성공() {
+        // given
+        long memberId = 10L;
+        long routeItemId = 55L;
+
+        RouteItem routeItem = Mockito.mock(RouteItem.class);
+
+        Mockito.when(routeItemRepository.findWithRouteByIdAndMemberIdAndRouteStatus(
+                        routeItemId, memberId, RouteStatus.IN_PROGRESS))
+                .thenReturn(Optional.of(routeItem));
+
+        // when
+        routeInProgressService.updateRouteItemVisited(memberId, routeItemId, true);
+
+        // then
+        Mockito.verify(routeItem, Mockito.times(1)).markVisited(true);
+    }
+
+    @Test
+    @DisplayName("updateRouteItemVisited: 실패 - 조건 불일치(없음/소유자아님/진행중아님) -> ROUTE_ITEM_NOT_IN_PROGRESS")
+    void updateRouteItemVisited_실패() {
+        // given
+        long memberId = 10L;
+        long routeItemId = 55L;
+
+        Mockito.when(routeItemRepository.findWithRouteByIdAndMemberIdAndRouteStatus(
+                        routeItemId, memberId, RouteStatus.IN_PROGRESS))
+                .thenReturn(Optional.empty());
+
+        // when
+        BaseException ex = Assertions.catchThrowableOfType(
+                () -> routeInProgressService.updateRouteItemVisited(memberId, routeItemId, true),
+                BaseException.class
+        );
+
+        // then
+        Assertions.assertThat(ex.getErrorCode().getStatus())
+                .isEqualTo(RouteError.ROUTE_ITEM_NOT_IN_PROGRESS.getStatus());
+    }
+
     @Test
     @DisplayName("completeRoute: 경로 없음 -> ROUTE_NOT_FOUND")
     void completeRoute_경로없음_예외() {

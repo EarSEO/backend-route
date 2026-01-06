@@ -11,6 +11,7 @@ import com.earseo.route.dto.response.SightMetaResponse;
 import com.earseo.route.entity.Route;
 import com.earseo.route.entity.RouteItem;
 import com.earseo.route.entity.RouteStatus;
+import com.earseo.route.repository.RouteItemRepository;
 import com.earseo.route.repository.RouteRepository;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchResult;
@@ -31,6 +32,7 @@ public class RouteInProgressService {
     private final SightFeignClient sightFeignClient;
     private final RouteSearchService routeSearchService;
     private final RouteRepository routeRepository;
+    private final RouteItemRepository routeItemRepository;
 
     public InProgressRouteDetailResponse createInProgressRoute(Long memberId, CreateRouteRequest request) {
 
@@ -101,6 +103,15 @@ public class RouteInProgressService {
                 pathResponses,
                 itemResponses
         );
+    }
+
+    public void updateRouteItemVisited(Long memberId, Long routeItemId, boolean visited) {
+
+        RouteItem routeItem = routeItemRepository
+                .findWithRouteByIdAndMemberIdAndRouteStatus(routeItemId, memberId, RouteStatus.IN_PROGRESS)
+                .orElseThrow(() -> new BaseException(RouteError.ROUTE_ITEM_NOT_IN_PROGRESS));
+
+        routeItem.markVisited(visited);
     }
 
     public void completeRoute(Long memberId, Long routeId) {

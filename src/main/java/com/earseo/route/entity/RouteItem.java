@@ -88,8 +88,8 @@ public class RouteItem {
         return item;
     }
 
-    public void markVisited() {
-        this.visited = true;
+    public void markVisited(boolean visited) {
+        this.visited = visited;
     }
 
     @PrePersist

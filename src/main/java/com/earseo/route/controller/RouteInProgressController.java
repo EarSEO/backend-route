@@ -2,6 +2,7 @@ package com.earseo.route.controller;
 
 import com.earseo.route.common.BaseResponse;
 import com.earseo.route.dto.request.CreateRouteRequest;
+import com.earseo.route.dto.request.UpdateRouteItemVisitedRequest;
 import com.earseo.route.dto.response.InProgressRouteDetailResponse;
 import com.earseo.route.service.RouteInProgressService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,6 +55,19 @@ public class RouteInProgressController {
     @GetMapping("/in-progress")
     public ResponseEntity<BaseResponse<InProgressRouteDetailResponse>> getInProgressRoute(@RequestHeader("X-USER-ID") Long userId) {
         return ResponseEntity.ok(BaseResponse.ok(routeInProgressService.getInProgressRoute(userId)));
+    }
+
+    @Operation(
+            summary = "[내 경로 진행 관리] 경로 아이템 방문(리스닝) 상태 저장",
+            description = "진행 중(IN_PROGRESS) 경로의 특정 아이템(routeItemId)의 visited 상태를 업데이트합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "방문 상태 저장 성공")
+    })
+    @PatchMapping("/in-progress/items/{routeItemId}/visited")
+    public ResponseEntity<BaseResponse<Void>> updateVisited(@RequestHeader("X-USER-ID") Long userId, @PathVariable Long routeItemId, @RequestBody UpdateRouteItemVisitedRequest request) {
+        routeInProgressService.updateRouteItemVisited(userId, routeItemId, request.visited());
+        return ResponseEntity.ok(BaseResponse.ok(null));
     }
 
     @Operation(
