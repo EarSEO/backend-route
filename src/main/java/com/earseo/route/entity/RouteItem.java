@@ -49,11 +49,17 @@ public class RouteItem {
     @Column(name = "longitude")
     private Double longitude;
 
+    @Column(name = "summary_id")
+    private Long summaryId;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "visited", nullable = false)
+    private boolean visited;
 
     public static RouteItem of(
             RouteRefType refType,
@@ -64,7 +70,8 @@ public class RouteItem {
             Double latitude,
             Double longitude,
             String docentUrl,
-            String theme
+            String theme,
+            Long summaryId
     ) {
         RouteItem item = new RouteItem();
         item.refType = refType;
@@ -76,7 +83,13 @@ public class RouteItem {
         item.longitude = longitude;
         item.docentUrl = docentUrl;
         item.theme = theme;
+        item.summaryId = summaryId;
+        item.visited = false;
         return item;
+    }
+
+    public void markVisited() {
+        this.visited = true;
     }
 
     @PrePersist
