@@ -16,9 +16,12 @@ import com.earseo.route.repository.RouteRepository;
 import com.earseo.route.service.route.RoutePathPoint;
 import com.earseo.route.service.route.RouteSearchResult;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,7 +30,6 @@ import java.util.List;
 public class RouteInProgressService {
 
     private final SightFeignClient sightFeignClient;
-//    private final RouteSearchService routeSearchService;
     private final RouteSearchService routeSearchService;
     private final RouteRepository routeRepository;
     private final RouteItemRepository routeItemRepository;
@@ -57,7 +59,8 @@ public class RouteInProgressService {
                 item.latitude(),
                 item.longitude(),
                 item.docentUrl(),
-                item.theme()
+                item.theme(),
+                item.summaryId()
         )).toList();
 
         route.addItems(routeItems);
@@ -67,17 +70,9 @@ public class RouteInProgressService {
                 .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
                 .toList();
 
-        List<RouteItemResponse> itemResponses = searchResult.items().stream().map(item -> new RouteItemResponse(
-                item.type(),
-                item.refId(),
-                item.name(),
-                item.imageUrl(),
-                item.address(),
-                new RoutePathPointResponse(item.longitude(), item.latitude()),
-                item.docentUrl(),
-                item.theme(),
-                item.summaryId()
-        )).toList();
+        List<RouteItemResponse> itemResponses = routeItems.stream()
+                .map(this::toRouteItemResponse)
+                .toList();
 
         return new InProgressRouteDetailResponse(
                 savedRoute.getId(),
@@ -86,10 +81,42 @@ public class RouteInProgressService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public InProgressRouteDetailResponse getInProgressRoute(Long memberId) {
+
+        Route route = routeRepository.findWithItemsByMemberIdAndStatus(memberId, RouteStatus.IN_PROGRESS).orElse(null);
+
+        if (route == null) {
+            return new InProgressRouteDetailResponse(null, List.of(), List.of());
+        }
+
+        List<RoutePathPointResponse> pathResponses = route.getPath() == null ? List.of() : getPaths(route.getPath()).stream()
+                .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
+                .toList();
+
+        List<RouteItemResponse> itemResponses = route.getItems().stream()
+                .map(this::toRouteItemResponse)
+                .toList();
+
+        return new InProgressRouteDetailResponse(
+                route.getId(),
+                pathResponses,
+                itemResponses
+        );
+    }
+
+    public void updateRouteItemVisited(Long memberId, Long routeItemId, boolean visited) {
+
+        RouteItem routeItem = routeItemRepository
+                .findWithRouteByIdAndMemberIdAndRouteStatus(routeItemId, memberId, RouteStatus.IN_PROGRESS)
+                .orElseThrow(() -> new BaseException(RouteError.ROUTE_ITEM_NOT_IN_PROGRESS));
+
+        routeItem.markVisited(visited);
+    }
+
     public void completeRoute(Long memberId, Long routeId) {
         Route route = routeRepository.findById(routeId)
-                .orElseThrow(() ->
-                        new BaseException(RouteError.ROUTE_NOT_FOUND));
+                .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
 
         if (!route.getMemberId().equals(memberId)) {
             throw new BaseException(RouteError.ROUTE_NOT_OWNER);
@@ -102,10 +129,21 @@ public class RouteInProgressService {
         route.complete();
     }
 
-    private static RoutePathPointResponse toPathResponse(RoutePathPoint p) {
-        return new RoutePathPointResponse(p.longitude(), p.latitude());
+    private RouteItemResponse toRouteItemResponse(RouteItem item) {
+        return new RouteItemResponse(
+                item.getRefType(),
+                item.getRefId(),
+                item.getName(),
+                item.getImageUrl(),
+                item.getAddress(),
+                new RoutePathPointResponse(item.getLongitude(), item.getLatitude()),
+                item.getDocentUrl(),
+                item.getTheme(),
+                item.getSummaryId(),
+                item.isVisited()
+        );
     }
-
+    
     private String buildRouteName(RouteSearchResult searchResult) {
         if (searchResult.items().isEmpty()) {
             return "나의 경로";
@@ -119,5 +157,23 @@ public class RouteInProgressService {
         }
 
         return start + " - " + end;
+    }
+
+    /***
+     * route 엔티티 객체의 geom 형식을 front에 전달가능한 형태로 변환하는 메소드
+     *
+     */
+    public List<RoutePathPoint> getPaths(LineString lineString){
+        Coordinate[] coords = lineString.getCoordinates();
+
+        List<RoutePathPoint> result = new ArrayList<>(coords.length);
+
+        for (Coordinate c : coords) {
+            result.add(new RoutePathPoint(
+                    c.getX(),
+                    c.getY()
+            ));
+        }
+        return result;
     }
 }

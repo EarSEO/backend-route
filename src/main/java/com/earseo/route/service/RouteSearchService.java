@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class RouteSearchService {
 
     public RouteSearchResult findRoute(Long memberId, List<SightMetaResponse> sights, PointRequest currentPoint) {
 
-        GeometryFactory geometryFactory = new GeometryFactory();
+        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
         List<Coordinate> allCoords = new ArrayList<>();
 
@@ -113,9 +114,10 @@ public class RouteSearchService {
         BaseResponse<GetRouteListSpotResponse> routeListSpotResponse = storyFeignClient.getPathsSpotList(new GetRouteListSpotRequest(paths, StoryConcept.TIP,null));
 
         Coordinate[] coordArray = allCoords.toArray(new Coordinate[0]);
-        LineString  lineString = geometryFactory.createLineString(coordArray);
+        LineString lineString = geometryFactory.createLineString(coordArray);
+        lineString.setSRID(4326);
 
-        return new RouteSearchResult(routes, getItems(sights,routeListSpotResponse.data()));
+        return new RouteSearchResult(routes, getItems(sights,routeListSpotResponse.data()), lineString);
     }
 
     private List<RouteSearchItem> getItems(List<SightMetaResponse> sights, GetRouteListSpotResponse routeListSpotResponse) {

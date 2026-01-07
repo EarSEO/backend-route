@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.LineString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +32,9 @@ public class Route {
 
     @Column(name = "started_at", nullable = false)
     private LocalDateTime startedAt;
+
+    @Column(name = "path", nullable = false, columnDefinition = "geometry(LineString, 4326)")
+    private LineString path;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -65,6 +69,19 @@ public class Route {
 
     public void complete() {
         this.status = RouteStatus.COMPLETED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+        if (this.startedAt == null) this.startedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 }

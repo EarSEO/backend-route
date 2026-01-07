@@ -31,5 +31,8 @@ public record RouteItemResponse(
         String itemMajorTheme,
 
         @Schema(description = "이야기 요약 아이디", example = "1L")
-        Long summaryId
+        Long summaryId,
+
+        @Schema(description = "방문(리스닝) 완료 여부", example = "false")
+        Boolean visited
 ) {}

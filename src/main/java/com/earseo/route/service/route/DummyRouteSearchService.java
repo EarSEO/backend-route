@@ -5,18 +5,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import org.locationtech.jts.geom.LineString;
+
+/** 테스트용! 기능 개발 완료 후 제거 예정
+ * - 테스트 통과 & 컴파일용 스텁(Stub)
+ * - API 플로우 검증용
+ */
 
 @Service
 public class DummyRouteSearchService implements RouteSearchService {
 
     @Override
     public RouteSearchResult findRoute(Long memberId, List<SightMetaResponse> sights) {
-        /** todo: 경로 찾기 로직 구현 예정
-         * 지금은 빈 결과를 반환해서 전체 플로우만 확인
-         **/
         return new RouteSearchResult(
-                Collections.emptyList(),
-                Collections.emptyList()
+                Collections.<RoutePathPoint>emptyList(),
+                Collections.<RouteSearchItem>emptyList(),
+                (LineString) null
         );
     }
 }
