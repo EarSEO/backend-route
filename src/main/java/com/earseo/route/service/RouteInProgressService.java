@@ -87,7 +87,7 @@ public class RouteInProgressService {
         Route route = routeRepository.findWithItemsByMemberIdAndStatus(memberId, RouteStatus.IN_PROGRESS).orElse(null);
 
         if (route == null) {
-            return null;
+            return new InProgressRouteDetailResponse(null, List.of(), List.of());
         }
 
         List<RoutePathPointResponse> pathResponses = route.getPath() == null ? List.of() : getPaths(route.getPath()).stream()

@@ -4,6 +4,7 @@ import com.earseo.route.common.BaseResponse;
 import com.earseo.route.dto.request.CreateRouteRequest;
 import com.earseo.route.dto.request.UpdateRouteItemVisitedRequest;
 import com.earseo.route.dto.response.InProgressRouteDetailResponse;
+import com.earseo.route.dto.response.SuccessResponse;
 import com.earseo.route.service.RouteInProgressService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -62,12 +63,16 @@ public class RouteInProgressController {
             description = "진행 중(IN_PROGRESS) 경로의 특정 아이템(routeItemId)의 visited 상태를 업데이트합니다."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "방문 상태 저장 성공")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "성공",
+                    content = @Content(schema = @Schema(implementation = SuccessResponse.class))
+            )
     })
     @PatchMapping("/in-progress/items/{routeItemId}/visited")
-    public ResponseEntity<BaseResponse<Void>> updateVisited(@RequestHeader("X-USER-ID") Long userId, @PathVariable Long routeItemId, @RequestBody UpdateRouteItemVisitedRequest request) {
+    public ResponseEntity<BaseResponse<SuccessResponse>> updateVisited(@RequestHeader("X-USER-ID") Long userId, @PathVariable Long routeItemId, @RequestBody UpdateRouteItemVisitedRequest request) {
         routeInProgressService.updateRouteItemVisited(userId, routeItemId, request.visited());
-        return ResponseEntity.ok(BaseResponse.ok(null));
+        return ResponseEntity.ok(BaseResponse.ok(SuccessResponse.ok()));
     }
 
     @Operation(
@@ -77,12 +82,13 @@ public class RouteInProgressController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "경로 종료 처리 성공"
+                    description = "성공",
+                    content = @Content(schema = @Schema(implementation = SuccessResponse.class))
             )
     })
     @PostMapping("/{routeId}/complete")
-    public ResponseEntity<BaseResponse<Void>> completeRoute(@RequestHeader("X-USER-ID") Long userId, @PathVariable("routeId") Long routeId) {
+    public ResponseEntity<BaseResponse<SuccessResponse>> completeRoute(@RequestHeader("X-USER-ID") Long userId, @PathVariable("routeId") Long routeId) {
         routeInProgressService.completeRoute(userId, routeId);
-        return ResponseEntity.ok(BaseResponse.ok(null));
+        return ResponseEntity.ok(BaseResponse.ok(SuccessResponse.ok()));
     }
 }

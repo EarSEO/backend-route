@@ -174,8 +174,8 @@ class RouteInProgressServiceTest {
     }
 
     @Test
-    @DisplayName("getInProgressRoute: 진행 중 경로 없으면 null 반환")
-    void getInProgressRoute_없음_null() {
+    @DisplayName("getInProgressRoute: 진행 중 경로 없으면 routeId=null, path=[], routeItems=[] 반환")
+    void getInProgressRoute_없음_빈응답() {
         // given
         long memberId = 10L;
 
@@ -186,9 +186,10 @@ class RouteInProgressServiceTest {
         InProgressRouteDetailResponse res = routeInProgressService.getInProgressRoute(memberId);
 
         // then
-        Assertions.assertThat(res).isNull();
-        Mockito.verify(routeRepository, Mockito.times(1))
-                .findWithItemsByMemberIdAndStatus(memberId, RouteStatus.IN_PROGRESS);
+        Assertions.assertThat(res).isNotNull();
+        Assertions.assertThat(res.routeId()).isNull();
+        Assertions.assertThat(res.path()).isEmpty();
+        Assertions.assertThat(res.routeItems()).isEmpty();
     }
 
     @Test
