@@ -2,6 +2,7 @@ package com.earseo.route.service;
 
 import com.earseo.route.common.exception.BaseException;
 import com.earseo.route.common.exception.RouteError;
+import com.earseo.route.dto.request.ModifyCompletedRouteRequest;
 import com.earseo.route.dto.response.CompletedRouteDetailResponse;
 import com.earseo.route.dto.response.CompletedRouteItemResponse;
 import com.earseo.route.dto.response.CompletedRouteListResponse;
@@ -59,12 +60,23 @@ public class RouteCompletedQueryService {
     }
 
     @Transactional
-    public CompletedRouteDetailResponse getCompletedRouteDetail(Long userId, Long routeId) {
-        Route route = routeRepository.findCompletedRouteDetail(userId, routeId)
+    public CompletedRouteDetailResponse getCompletedRouteDetail(Long memberId, Long routeId) {
+        Route route = routeRepository.findCompletedRouteDetail(memberId, routeId)
                 .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
 
         List<RouteItem> routeItems = route.getItems();
 
         return new CompletedRouteDetailResponse(toResponse(route), routeItems.stream().map(this::toRouteItemResponse).toList());
+    }
+
+    @Transactional
+    public CompletedRouteSummaryResponse modifyCompletedRouteName(ModifyCompletedRouteRequest modifyCompletedRoute, Long memberId, Long routeId) {
+        Route route = routeRepository.findCompletedRouteDetail(memberId, routeId)
+                .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
+
+        route.modifyName(modifyCompletedRoute.name());
+        routeRepository.save(route);
+
+        return new CompletedRouteSummaryResponse(route.getId(), route.getName(), route.getCreatedAt().format(DATE_FORMATTER));
     }
 }

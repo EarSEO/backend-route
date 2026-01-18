@@ -1,14 +1,17 @@
 package com.earseo.route.controller;
 
 import com.earseo.route.common.BaseResponse;
+import com.earseo.route.dto.request.ModifyCompletedRouteRequest;
 import com.earseo.route.dto.response.CompletedRouteDetailResponse;
 import com.earseo.route.dto.response.CompletedRouteListResponse;
+import com.earseo.route.dto.response.CompletedRouteSummaryResponse;
 import com.earseo.route.service.RouteCompletedQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -59,5 +62,11 @@ public class RouteCompletedController {
     public ResponseEntity<BaseResponse<CompletedRouteDetailResponse>> getCompletedRouteDetail(@RequestHeader("X-USER-ID") Long userId,
                                                                                               @PathVariable("routeId") Long routeId) {
         return ResponseEntity.ok(BaseResponse.ok(routeCompletedQueryService.getCompletedRouteDetail(userId, routeId)));
+    }
+
+    @PutMapping("/completed/detail/{routeId}")
+    public ResponseEntity<BaseResponse<CompletedRouteSummaryResponse>> modifyCompletedRouteName(@Valid @RequestBody ModifyCompletedRouteRequest modifyCompletedRoute,
+                                                                                                @RequestHeader("X-USER-ID") Long userId, @PathVariable("routeId") Long routeId) {
+        return ResponseEntity.ok(BaseResponse.ok(routeCompletedQueryService.modifyCompletedRouteName(modifyCompletedRoute, userId, routeId)));
     }
 }
