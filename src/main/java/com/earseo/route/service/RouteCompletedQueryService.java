@@ -79,4 +79,12 @@ public class RouteCompletedQueryService {
 
         return new CompletedRouteSummaryResponse(route.getId(), route.getName(), route.getCreatedAt().format(DATE_FORMATTER));
     }
+
+    @Transactional
+    public void deleteRoute(Long routeId, Long memberId) {
+        Route route = routeRepository.findCompletedRouteDetail(memberId, routeId)
+                .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
+
+        routeRepository.delete(route);
+    }
 }

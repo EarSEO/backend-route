@@ -64,9 +64,40 @@ public class RouteCompletedController {
         return ResponseEntity.ok(BaseResponse.ok(routeCompletedQueryService.getCompletedRouteDetail(userId, routeId)));
     }
 
-    @PutMapping("/completed/detail/{routeId}")
+    @Operation(
+            summary = "[완료된 경로 기록 관리] 완료된 경로 이름 변경",
+            description = """
+                    완료된 경로의 이름을 변경합니다.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "완료된 경로 이름 변경 성공",
+                    content = @Content(schema = @Schema(implementation = CompletedRouteSummaryResponse.class))
+            )
+    })
+    @PutMapping("/completed/{routeId}")
     public ResponseEntity<BaseResponse<CompletedRouteSummaryResponse>> modifyCompletedRouteName(@Valid @RequestBody ModifyCompletedRouteRequest modifyCompletedRoute,
                                                                                                 @RequestHeader("X-USER-ID") Long userId, @PathVariable("routeId") Long routeId) {
         return ResponseEntity.ok(BaseResponse.ok(routeCompletedQueryService.modifyCompletedRouteName(modifyCompletedRoute, userId, routeId)));
+    }
+
+    @Operation(
+            summary = "[완료된 경로 기록 관리] 완료된 경로 삭제",
+            description = """
+                    완료된 경로를 삭제합니다.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "완료된 경로 삭제 성공"
+            )
+    })
+    @DeleteMapping("/completed/{routeId}")
+    public ResponseEntity<Void> deleteRoute(@PathVariable("routeId") Long routeId, @RequestHeader("X-USER-ID") Long userId) {
+        routeCompletedQueryService.deleteRoute(routeId, userId);
+        return ResponseEntity.noContent().build();
     }
 }
