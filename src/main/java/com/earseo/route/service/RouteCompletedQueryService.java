@@ -1,8 +1,13 @@
 package com.earseo.route.service;
 
+import com.earseo.route.common.exception.BaseException;
+import com.earseo.route.common.exception.RouteError;
+import com.earseo.route.dto.response.CompletedRouteDetailResponse;
+import com.earseo.route.dto.response.CompletedRouteItemResponse;
 import com.earseo.route.dto.response.CompletedRouteListResponse;
 import com.earseo.route.dto.response.CompletedRouteSummaryResponse;
 import com.earseo.route.entity.Route;
+import com.earseo.route.entity.RouteItem;
 import com.earseo.route.entity.RouteStatus;
 import com.earseo.route.repository.RouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +29,7 @@ public class RouteCompletedQueryService {
 
     private final RouteRepository routeRepository;
 
-    public CompletedRouteListResponse getCompletedRoutes(
-            Long memberId,
-            Pageable pageable
-    ) {
+    public CompletedRouteListResponse getCompletedRoutes(Long memberId, Pageable pageable) {
         Slice<Route> slice = routeRepository.findByMemberIdAndStatusOrderByCreatedAtDesc(
                 memberId,
                 RouteStatus.COMPLETED,
@@ -45,5 +47,24 @@ public class RouteCompletedQueryService {
                 route.getName(),
                 route.getCreatedAt().format(DATE_FORMATTER)
         );
+    }
+
+    private CompletedRouteItemResponse toRouteItemResponse(RouteItem routeItem) {
+        return new CompletedRouteItemResponse(
+                routeItem.getRefType(),
+                routeItem.getRefId(),
+                routeItem.getName(),
+                routeItem.getImageUrl()
+        );
+    }
+
+    @Transactional
+    public CompletedRouteDetailResponse getCompletedRouteDetail(Long userId, Long routeId) {
+        Route route = routeRepository.findCompletedRouteDetail(userId, routeId)
+                .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
+
+        List<RouteItem> routeItems = route.getItems();
+
+        return new CompletedRouteDetailResponse(toResponse(route), routeItems.stream().map(this::toRouteItemResponse).toList());
     }
 }
