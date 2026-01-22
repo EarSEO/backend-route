@@ -8,6 +8,7 @@ import com.earseo.route.dto.response.CompletedRouteSummaryResponse;
 import com.earseo.route.service.RouteCompletedQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +58,22 @@ public class RouteCompletedController {
                     responseCode = "200",
                     description = "완료된 경로 상세정보 조회 성공",
                     content = @Content(schema = @Schema(implementation = CompletedRouteDetailResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "사용자 정보와 완료된 경로 검증 실패 및 조회 실패",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                "status": "RUT002",
+                                                "message": "존재하지 않는 경로입니다.",
+                                                "data": null
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     @GetMapping("/completed/detail/{routeId}")
@@ -75,6 +93,22 @@ public class RouteCompletedController {
                     responseCode = "200",
                     description = "완료된 경로 이름 변경 성공",
                     content = @Content(schema = @Schema(implementation = CompletedRouteSummaryResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "사용자 정보와 완료된 경로 검증 실패 및 조회 실패",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                "status": "RUT002",
+                                                "message": "존재하지 않는 경로입니다.",
+                                                "data": null
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     @PutMapping("/completed/{routeId}")
@@ -93,6 +127,22 @@ public class RouteCompletedController {
             @ApiResponse(
                     responseCode = "204",
                     description = "완료된 경로 삭제 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "사용자 정보와 완료된 경로 검증 실패 및 조회 실패",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                "status": "RUT002",
+                                                "message": "존재하지 않는 경로입니다.",
+                                                "data": null
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     @DeleteMapping("/completed/{routeId}")
