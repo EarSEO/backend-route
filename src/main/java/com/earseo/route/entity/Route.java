@@ -84,4 +84,9 @@ public class Route {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void modifyName(String name){
+        this.updatedAt = LocalDateTime.now();
+        this.name = name;
+    }
 }
