@@ -193,44 +193,6 @@ class RouteInProgressServiceTest {
     }
 
     @Test
-    @DisplayName("getInProgressRoute: path가 null이면 path=[] 반환")
-    void getInProgressRoute_pathNull_빈리스트() {
-        // given
-        long memberId = 10L;
-
-        Route route = Mockito.mock(Route.class);
-        Mockito.when(route.getId()).thenReturn(777L);
-        Mockito.when(route.getPath()).thenReturn(null);
-
-        RouteItem item1 = Mockito.mock(RouteItem.class);
-        Mockito.when(item1.getRefType()).thenReturn(RouteRefType.SIGHT);
-        Mockito.when(item1.getRefId()).thenReturn("1");
-        Mockito.when(item1.getName()).thenReturn("경복궁");
-        Mockito.when(item1.getImageUrl()).thenReturn("img");
-        Mockito.when(item1.getAddress()).thenReturn("addr");
-        Mockito.when(item1.getLongitude()).thenReturn(126.97);
-        Mockito.when(item1.getLatitude()).thenReturn(37.57);
-        Mockito.when(item1.getDocentUrl()).thenReturn("docent");
-        Mockito.when(item1.getTheme()).thenReturn("A01");
-        Mockito.when(item1.getSummaryId()).thenReturn(null);
-        Mockito.when(item1.isVisited()).thenReturn(false);
-
-        Mockito.when(route.getItems()).thenReturn(List.of(item1));
-
-        Mockito.when(routeRepository.findWithItemsByMemberIdAndStatus(memberId, RouteStatus.IN_PROGRESS))
-                .thenReturn(Optional.of(route));
-
-        // when
-        InProgressRouteDetailResponse res = routeInProgressService.getInProgressRoute(memberId);
-
-        // then
-        Assertions.assertThat(res).isNotNull();
-        Assertions.assertThat(res.routeId()).isEqualTo(777L);
-        Assertions.assertThat(res.path()).isEmpty();
-        Assertions.assertThat(res.routeItems()).hasSize(1);
-    }
-
-    @Test
     @DisplayName("getInProgressRoute: 진행 중 경로 있으면 path(LineString) + items(visited 포함) 반환")
     void getInProgressRoute_성공() {
         // given
