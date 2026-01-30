@@ -48,7 +48,7 @@ public class RouteInProgressService {
         RouteSearchResult searchResult = routeSearchService.findRoute(memberId, sights, request.point());
 
         String routeName = buildRouteName(searchResult);
-        Route route = Route.createInProgress(memberId, routeName);
+        Route route = Route.createInProgress(memberId, routeName, searchResult.lineString());
 
         List<RouteItem> routeItems = searchResult.items().stream().map(item -> RouteItem.of(
                 item.type(),
@@ -90,9 +90,10 @@ public class RouteInProgressService {
             return new InProgressRouteDetailResponse(null, List.of(), List.of());
         }
 
-        List<RoutePathPointResponse> pathResponses = route.getPath() == null ? List.of() : getPaths(route.getPath()).stream()
-                .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
-                .toList();
+        List<RoutePathPointResponse> pathResponses =
+                getPaths(route.getPath()).stream()
+                        .map(p -> new RoutePathPointResponse(p.longitude(), p.latitude()))
+                        .toList();
 
         List<RouteItemResponse> itemResponses = route.getItems().stream()
                 .map(this::toRouteItemResponse)

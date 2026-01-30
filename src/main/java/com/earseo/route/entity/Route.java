@@ -45,7 +45,7 @@ public class Route {
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RouteItem> items = new ArrayList<>();
 
-    public static Route createInProgress(Long memberId, String name) {
+    public static Route createInProgress(Long memberId, String name, LineString path) {
         Route route = new Route();
         route.memberId = memberId;
         route.name = name;
@@ -53,6 +53,7 @@ public class Route {
         route.startedAt = LocalDateTime.now();
         route.createdAt = LocalDateTime.now();
         route.updatedAt = LocalDateTime.now();
+        route.path = path;
         return route;
     }
 
