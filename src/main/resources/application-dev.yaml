@@ -14,7 +14,6 @@ spring:
       hibernate:
         show_sql: false
         format_sql: true
-        dialect: ${SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT:org.hibernate.spatial.dialect.postgis.PostgisDialect}
     open-in-view: false
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
