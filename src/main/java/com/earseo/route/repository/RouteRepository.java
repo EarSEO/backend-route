@@ -29,7 +29,6 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
             left join fetch r.items ri
             where r.id = :routeId
               and r.memberId = :memberId
-            order by ri.createdAt asc
             """)
     Optional<Route> findCompletedRouteDetail(
             @Param("routeId") Long routeId,
