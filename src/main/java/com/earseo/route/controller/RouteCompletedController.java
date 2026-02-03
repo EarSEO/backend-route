@@ -81,8 +81,6 @@ public class RouteCompletedController {
     @GetMapping("/completed/detail/{routeId}")
     public ResponseEntity<BaseResponse<CompletedRouteDetailResponse>> getCompletedRouteDetail(@RequestHeader("X-USER-ID") Long userId,
                                                                                               @PathVariable("routeId") Long routeId) {
-        log.info("memberId : {}", userId);
-        log.info("routeId : {}", routeId);
         return ResponseEntity.ok(BaseResponse.ok(routeCompletedQueryService.getCompletedRouteDetail(userId, routeId)));
     }
 
