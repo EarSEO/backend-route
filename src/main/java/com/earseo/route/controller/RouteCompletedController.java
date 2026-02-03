@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user/route")
 @RequiredArgsConstructor
+@Slf4j
 public class RouteCompletedController {
 
     private final RouteCompletedQueryService routeCompletedQueryService;
@@ -79,6 +81,8 @@ public class RouteCompletedController {
     @GetMapping("/completed/detail/{routeId}")
     public ResponseEntity<BaseResponse<CompletedRouteDetailResponse>> getCompletedRouteDetail(@RequestHeader("X-USER-ID") Long userId,
                                                                                               @PathVariable("routeId") Long routeId) {
+        log.info("memberId : {}", userId);
+        log.info("routeId : {}", routeId);
         return ResponseEntity.ok(BaseResponse.ok(routeCompletedQueryService.getCompletedRouteDetail(userId, routeId)));
     }
 
