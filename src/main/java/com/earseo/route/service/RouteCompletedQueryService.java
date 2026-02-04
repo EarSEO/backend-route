@@ -71,7 +71,7 @@ public class RouteCompletedQueryService {
 
     @Transactional
     public CompletedRouteSummaryResponse modifyCompletedRouteName(ModifyCompletedRouteRequest modifyCompletedRoute, Long memberId, Long routeId) {
-        Route route = routeRepository.findCompletedRouteDetail(memberId, routeId)
+        Route route = routeRepository.findCompletedRouteDetail(routeId, memberId)
                 .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
 
         route.modifyName(modifyCompletedRoute.name());
@@ -82,7 +82,7 @@ public class RouteCompletedQueryService {
 
     @Transactional
     public void deleteRoute(Long routeId, Long memberId) {
-        Route route = routeRepository.findCompletedRouteDetail(memberId, routeId)
+        Route route = routeRepository.findCompletedRouteDetail(routeId, memberId)
                 .orElseThrow(() -> new BaseException(RouteError.ROUTE_NOT_FOUND));
 
         routeRepository.delete(route);
